@@ -10,6 +10,7 @@
 #include <QThread>
 #include <QEventLoop>
 #include <windows.h>
+#include <processthreadsapi.h>
 #include <QWebEngineView>
 #include <QWebChannel>
 #include <QWebEngineProfile>

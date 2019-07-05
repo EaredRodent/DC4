@@ -8,6 +8,8 @@ QT       += core gui webenginewidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+RC_FILE = myapp.rc
+
 TARGET = DSO_Cam_v4
 TEMPLATE = app
 
@@ -43,6 +45,7 @@ FORMS += \
         mainwindow.ui
 
 LIBS += -lntdll
+LIBS += -ladvapi32
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -51,3 +54,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 CONFIG += embed_manifest_exe
 QMAKE_LFLAGS_WINDOWS += /MANIFESTUAC:"level='requireAdministrator'"
+
+DISTFILES += \
+    myapp.exe.manifest \
+    myapp.rc

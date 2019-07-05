@@ -19,8 +19,9 @@ void Chain::init()
 
     while (1) {
         if(isValid()) {
+            qDebug() << "NEVER HERE";
             // slot send
-            tryToMake = 0;
+//            tryToMake = 0;
             jsonObject = fromMemoryValues();
             jsonObject.insert("isValid", true);
             setValues(jsonObject);
@@ -30,16 +31,22 @@ void Chain::init()
             jsonObject = QJsonObject();
             jsonObject.insert("isValid", false);
             jsonObject.insert("tryMakeChain", tryToMake);
+//            qDebug() << "0";
             setValues(jsonObject);
+//            qDebug() << "1";
             makeChain();
+//            qDebug() << "2";
         }
+//        qDebug() << "before st";
         tr->start(100);
+//        qDebug() << "after st";
         el->exec();
+//        qDebug() << "after exec";
     }
 }
 
 bool Chain::makeChain() {
-//    qDebug() << fakeThreadStack;
+    //    qDebug() << fakeThreadStack;
 
 
     //    for (int threadStack = fakeThreadStack; (fakeThreadStack - 0x1000) < threadStack; threadStack -= 4)

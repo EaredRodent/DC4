@@ -29,8 +29,6 @@ unsigned int getFakeThreadStack(HANDLE processHandle, unsigned int processId) {
     NT_TIB                          ntTib;
     THREADENTRY32                   threadEntry;
     HANDLE snapshot =               CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
-    errCode = GetLastError();
-    qDebug() << errCode << FM(errCode);
     threadEntry.dwSize =            sizeof(threadEntry);
 
     while (Thread32Next(snapshot, &threadEntry))

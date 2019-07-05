@@ -37,21 +37,56 @@ MainWindow::MainWindow(QWidget *parent) :
     file.open(QIODevice::Append);
     QTextStream ts(&file);
 
-    processId = processGetPid("dro_client.exe");
-    qDebug() << "PID: " << processId;
-    ts << "PID: " << processId << '\r\n';
-    DWORD errCode = GetLastError();
-    qDebug() << errCode << FM(errCode);
+    DWORD errCode = 0;
 
-    processHandle = OpenProcess(PROCESS_ALL_ACCESS, 0, processId);
+
+
+    //*********************
+    HANDLE hToken = NULL;
+    TOKEN_PRIVILEGES tokenPriv;
+    LUID luidDebug;
+    if(OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken) != FALSE)
+    {
+        if(LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &luidDebug) != FALSE)
+        {
+            tokenPriv.PrivilegeCount           = 1;
+            tokenPriv.Privileges[0].Luid       = luidDebug;
+            tokenPriv.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+            if(AdjustTokenPrivileges(hToken, FALSE, &tokenPriv, 0, NULL, NULL) != FALSE)
+            {
+                // Always successful, even in the cases which lead to OpenProcess failure
+                qDebug() << "SUCCESSFULLY CHANGED TOKEN PRIVILEGES" << endl;
+            }
+            else
+            {
+                qDebug() << "FAILED TO CHANGE TOKEN PRIVILEGES, CODE: " << GetLastError() << endl;
+            }
+        }
+    }
+    CloseHandle(hToken);
+    //*********************
+
+
+    // PID
+    processId = processGetPid("dro_client.exe");
+
     errCode = GetLastError();
-    qDebug() << errCode << FM(errCode);
-    qDebug() << "PH: " << processHandle;
-    ts << "PH: " << processHandle << '\r\n';
+    if(errCode) {
+        QMessageBox::critical(0, "Error", FM(errCode));
+        exit(0);
+    }
+
+    // OPEN PROC
+    processHandle = OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE, 0, processId);
+
+    errCode = GetLastError();
+    if(errCode) {
+        QMessageBox::critical(0, "OpenProcess", FM(errCode));
+        exit(0);
+    }
 
     int fakeThreadStack = getFakeThreadStack(processHandle, processId);
     qDebug() << "FTS: " << fakeThreadStack;
-    ts << "FTS: " << fakeThreadStack << '\r\n\r\n';
 
     QThread *chainThread = new QThread();
     Chain *chain = new Chain(processHandle, fakeThreadStack);
