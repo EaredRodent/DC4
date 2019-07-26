@@ -42,48 +42,48 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     //*********************
-    HANDLE hToken = NULL;
-    TOKEN_PRIVILEGES tokenPriv;
-    LUID luidDebug;
-    if(OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken) != FALSE)
-    {
-        if(LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &luidDebug) != FALSE)
-        {
-            tokenPriv.PrivilegeCount           = 1;
-            tokenPriv.Privileges[0].Luid       = luidDebug;
-            tokenPriv.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-            if(AdjustTokenPrivileges(hToken, FALSE, &tokenPriv, 0, NULL, NULL) != FALSE)
-            {
-                // Always successful, even in the cases which lead to OpenProcess failure
-                qDebug() << "SUCCESSFULLY CHANGED TOKEN PRIVILEGES" << endl;
-            }
-            else
-            {
-                qDebug() << "FAILED TO CHANGE TOKEN PRIVILEGES, CODE: " << GetLastError() << endl;
-            }
-        }
-    }
-    CloseHandle(hToken);
+    //    HANDLE hToken = NULL;
+    //    TOKEN_PRIVILEGES tokenPriv;
+    //    LUID luidDebug;
+    //    if(OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken) != FALSE)
+    //    {
+    //        if(LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &luidDebug) != FALSE)
+    //        {
+    //            tokenPriv.PrivilegeCount           = 1;
+    //            tokenPriv.Privileges[0].Luid       = luidDebug;
+    //            tokenPriv.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+    //            if(AdjustTokenPrivileges(hToken, FALSE, &tokenPriv, 0, NULL, NULL) != FALSE)
+    //            {
+    //                // Always successful, even in the cases which lead to OpenProcess failure
+    //                qDebug() << "SUCCESSFULLY CHANGED TOKEN PRIVILEGES" << endl;
+    //            }
+    //            else
+    //            {
+    //                qDebug() << "FAILED TO CHANGE TOKEN PRIVILEGES, CODE: " << GetLastError() << endl;
+    //            }
+    //        }
+    //    }
+    //    CloseHandle(hToken);
     //*********************
 
 
     // PID
     processId = processGetPid("dro_client.exe");
 
-    errCode = GetLastError();
-    if(errCode) {
-        QMessageBox::critical(0, "Error", FM(errCode));
-        exit(0);
-    }
+//    errCode = GetLastError();
+//    if(errCode) {
+//        QMessageBox::critical(0, "Error", FM(errCode));
+//        exit(0);
+//    }
 
     // OPEN PROC
-    processHandle = OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE, 0, processId);
+    processHandle = OpenProcess(PROCESS_ALL_ACCESS, 0, processId);
 
-    errCode = GetLastError();
-    if(errCode) {
-        QMessageBox::critical(0, "OpenProcess", FM(errCode));
-        exit(0);
-    }
+//    errCode = GetLastError();
+//    if(errCode) {
+//        QMessageBox::critical(0, "OpenProcess", FM(errCode));
+//        exit(0);
+//    }
 
     int fakeThreadStack = getFakeThreadStack(processHandle, processId);
     qDebug() << "FTS: " << fakeThreadStack;
