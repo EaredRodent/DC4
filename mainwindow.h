@@ -39,8 +39,8 @@ private:
     QString clientUrl = "http://dso-client/dso-cam";
 #endif
 #ifndef QT_DEBUG
-    QString clientUrl = "https://dso.earedrodent.com/dso-cam";
-//    QString clientUrl = "http://dso-client/dso-cam";
+//    QString clientUrl = "https://dso.earedrodent.com/dso-cam";
+    QString clientUrl = "http://dso-client/dso-cam";
 #endif
     QString version = "4.0.0";
 public slots:

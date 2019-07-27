@@ -19,38 +19,28 @@ void Chain::init()
 
     while (1) {
         if(isValid()) {
-            qDebug() << "NEVER HERE";
-            // slot send
-//            tryToMake = 0;
             jsonObject = fromMemoryValues();
             jsonObject.insert("isValid", true);
             setValues(jsonObject);
             writeToMemory();
+
+            tr->start(10);
         } else {
             tryToMake++;
             jsonObject = QJsonObject();
             jsonObject.insert("isValid", false);
             jsonObject.insert("tryMakeChain", tryToMake);
-//            qDebug() << "0";
             setValues(jsonObject);
-//            qDebug() << "1";
             makeChain();
-//            qDebug() << "2";
+
+            tr->start(100);
         }
-//        qDebug() << "before st";
-        tr->start(100);
-//        qDebug() << "after st";
+
         el->exec();
-//        qDebug() << "after exec";
     }
 }
 
 bool Chain::makeChain() {
-    //    qDebug() << fakeThreadStack;
-
-
-    //    for (int threadStack = fakeThreadStack; (fakeThreadStack - 0x1000) < threadStack; threadStack -= 4)
-    //    {
     this->threadStack = fakeThreadStack;
 
     for(int offset0 = 0; offset0 < 0x1000; offset0 += 4) {
@@ -60,9 +50,7 @@ bool Chain::makeChain() {
             qDebug() << "TS: " << QString::number(this->threadStack, 0x10) << "OFFSET0: -(" << QString::number(this->offset0 * -1, 0x10) << ")";
             return true;
         }
-        //                    qDebug() << threadStack << " " << (QString) "Chain::makeChain: " + QString::number(100 - (((threadStack - (fakeThreadStack - 0x1000)) * 100) / 0x1000)) + "%";
     }
-    //    }
 
     return false;
 }
@@ -140,6 +128,7 @@ QJsonObject Chain::fromMemoryValues()
 void Chain::getValues(QJsonDocument jsonDocument)
 {
     objWriteToMemory = jsonDocument.object();
+    qDebug() << objWriteToMemory;
 }
 
 void Chain::writeToMemory()

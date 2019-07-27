@@ -5,19 +5,24 @@ Bridge::Bridge(QObject *parent) : QObject(parent)
 
 }
 
-QJsonObject Bridge::getVal()
+QJsonObject Bridge::readRead()
 {
-    return rJsonObject;
+//    qDebug() << objectForRead;
+    return objectForRead;
 }
 
-void Bridge::setVal(QJsonObject jsonObject)
+QJsonObject Bridge::readWrite()
 {
+    return objectForMemoryWrite;
+}
+
+void Bridge::writeWrite(QJsonObject jsonObject)
+{
+    qDebug() << jsonObject;
     emit setValues(*(new QJsonDocument(jsonObject)));
 }
 
-
 void Bridge::getValues(QJsonObject jsonObject)
 {
-//    qDebug() << jsonObject;
-    rJsonObject =  jsonObject;
+    objectForRead =  jsonObject;
 }
