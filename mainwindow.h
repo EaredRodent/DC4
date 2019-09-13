@@ -2,15 +2,12 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
 #include <QDebug>
 #include <QObject>
 #include <QString>
 #include <QJsonObject>
 #include <QThread>
 #include <QEventLoop>
-#include <windows.h>
-#include <processthreadsapi.h>
 #include <QWebEngineView>
 #include <QWebChannel>
 #include <QWebEngineProfile>
@@ -18,7 +15,9 @@
 #include <QFile>
 #include <QTextStream>
 
-#include "system.h"
+#include <windows.h>
+#include <processthreadsapi.h>
+
 #include "chain.h"
 #include "bridge.h"
 
@@ -36,11 +35,11 @@ public:
 private:
     Ui::MainWindow *ui;
 #ifdef QT_DEBUG
-    QString clientUrl = "http://dso-client/dso-cam";
+    QString clientUrl = "http://dso-client/private/dso-cam";
 #endif
 #ifndef QT_DEBUG
-//    QString clientUrl = "https://dso.earedrodent.com/dso-cam";
-    QString clientUrl = "http://dso-client/dso-cam";
+//    QString clientUrl = "https://dso.earedrodent.com/private/dso-cam";
+    QString clientUrl = "http://dso-client/private/dso-cam";
 #endif
     QString version = "4.0.0";
 public slots:

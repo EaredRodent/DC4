@@ -1,10 +1,9 @@
 #include "chain.h"
 #include "camera.h"
 
-Chain::Chain(HANDLE handle, int fakeThreadStack)
+Chain::Chain(QString version)
 {
-    this->handle = handle;
-    this->fakeThreadStack = fakeThreadStack;
+    this->version = version;
 }
 
 void Chain::init()
@@ -13,24 +12,26 @@ void Chain::init()
     QTimer *tr = new QTimer();
     tr->setSingleShot(true);
     QObject::connect(tr, SIGNAL(timeout()), el, SLOT(quit()));
-    QJsonObject jsonObject;
+    QVariantMap output;
 
     int tryToMake = 0;
 
     while (1) {
         if(isValid()) {
-            jsonObject = fromMemoryValues();
-            jsonObject.insert("isValid", true);
-            setValues(jsonObject);
-            writeToMemory();
-
-            tr->start(10);
+            tryToMake = 0;
+            output = fromMemoryValues();
+            output.insert("isValid", true);
+            output.insert("version", version);
+            output.insert("threadStack", QString::number(threadStack + offset0, 0x10));
+            toBridge(output);
+            tr->start(500);
         } else {
             tryToMake++;
-            jsonObject = QJsonObject();
-            jsonObject.insert("isValid", false);
-            jsonObject.insert("tryMakeChain", tryToMake);
-            setValues(jsonObject);
+            output = QVariantMap();
+            output.insert("isValid", false);
+            output.insert("version", version);
+            output.insert("times", tryToMake);
+            toBridge(output);
             makeChain();
 
             tr->start(100);
@@ -41,13 +42,17 @@ void Chain::init()
 }
 
 bool Chain::makeChain() {
-    this->threadStack = fakeThreadStack;
+    processId = processGetPid("dro_client.exe");
+    handle = OpenProcess(PROCESS_ALL_ACCESS, 0, processId);
+    fakeThreadStack = getFakeThreadStack(handle, processId);
+
+    threadStack = fakeThreadStack;
 
     for(int offset0 = 0; offset0 < 0x1000; offset0 += 4) {
         this->offset0 = -offset0;
 
         if(isValid()) {
-            qDebug() << "TS: " << QString::number(this->threadStack, 0x10) << "OFFSET0: -(" << QString::number(this->offset0 * -1, 0x10) << ")";
+//            qDebug() << "TS: " << QString::number(this->threadStack, 0x10) << "OFFSET0: -(" << QString::number(this->offset0 * -1, 0x10) << ")";
             return true;
         }
     }
@@ -63,6 +68,7 @@ bool Chain::isValid()
     ReadProcessMemory(handle, (int *)(baseAddress + Chain::offset1), &baseAddress, sizeof(int), 0);
     ReadProcessMemory(handle, (int *)(baseAddress + Chain::offset2), &baseAddress, sizeof(int), 0);
     ReadProcessMemory(handle, (int *)(baseAddress + Chain::offset3), &baseAddress, sizeof(int), 0);
+    ReadProcessMemory(handle, (int *)(baseAddress + Chain::offset4), &baseAddress, sizeof(int), 0);
 
     this->baseAddress = baseAddress;
     float check;
@@ -76,16 +82,18 @@ bool Chain::isValid()
             ReadProcessMemory(handle, (int *)(baseAddress + Camera::fog), &check, sizeof(float), 0);
             if ((0 <= check) && (check <= 100))
             {
-                return true;
+                if(QRegExp("^[\\w-]+$").indexIn(getCityName()) != -1) {
+                    return true;
+                }
             }
         }
     }
     return false;
 }
 
-QJsonObject Chain::fromMemoryValues()
+QVariantMap Chain::fromMemoryValues()
 {
-    QJsonObject cameraValues;
+    QVariantMap cameraValues;
     float rVal;
 
     ReadProcessMemory(handle, (int *)(baseAddress + Camera::x), &rVal, sizeof(float), 0);
@@ -104,12 +112,16 @@ QJsonObject Chain::fromMemoryValues()
     cameraValues.insert("exZoom", rVal);
     ReadProcessMemory(handle, (int *)(baseAddress + Camera::fog), &rVal, sizeof(float), 0);
     cameraValues.insert("fog", rVal);
+    cameraValues.insert("cityName", getCityName());
+    return cameraValues;
+}
 
+QString Chain::getCityName() {
     int citySrc;
     char cityByte = 0;
     int cityPos = 0;
     char cityName[256];
-    ReadProcessMemory(handle, (int *)(threadStack + Chain::citOffset0), &citySrc, sizeof(int), 0);
+    ReadProcessMemory(handle, (int *)(threadStack + offset0), &citySrc, sizeof(int), 0);
     citySrc += Chain::citOffset1;
     while (1) {
         ReadProcessMemory(handle, (int *)(citySrc + cityPos), &cityByte, sizeof(char), 0);
@@ -121,19 +133,19 @@ QJsonObject Chain::fromMemoryValues()
             break;
         }
     }
-    cameraValues.insert("cityName", QString(cityName));
-    return cameraValues;
+    return QString(cityName);
 }
 
-void Chain::getValues(QJsonDocument jsonDocument)
+void Chain::fromBridge(QVariantMap map)
 {
-    objWriteToMemory = jsonDocument.object();
-    qDebug() << objWriteToMemory;
+    objWriteToMemory = map;
+    writeToMemory();
+    //    qDebug() << objWriteToMemory;
 }
 
 void Chain::writeToMemory()
 {
-    QJsonObject o = objWriteToMemory;
+    QVariantMap o = objWriteToMemory;
     if(objWriteToMemory.isEmpty()) {
         return;
     }

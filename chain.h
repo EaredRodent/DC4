@@ -1,40 +1,54 @@
 #ifndef CHAIN_H
 #define CHAIN_H
-#include <qobject.h>
+#include <QObject>
+#include <QDebug>
+#include <QString>
+#include <QJsonObject>
+#include <QEventLoop>
+#include <QTimer>
+#include <QJsonDocument>
+#include <QVariantMap>
+#include <QRegExp>
+
 #include <windows.h>
-#include <qdebug.h>
-#include <qstring.h>
-#include <qjsonobject.h>
-#include <qeventloop.h>
-#include <qtimer.h>
-#include <qjsondocument.h>
+
+#include "system.h"
 
 class Chain : public QObject
 {
     Q_OBJECT
 public:
-    Chain(HANDLE handle, int fakeThreadStack);
+    Chain(QString version);
     int baseAddress = 0x0;
     bool makeChain();
 private:
-    HANDLE handle;
-    int fakeThreadStack;
+    DWORD processId = 0x0;
+    HANDLE handle = 0x0;
+    int fakeThreadStack = 0x0;
     int threadStack = 0x0;
+
     int offset0 = -0x0;
-    static const int offset1 = 0x134;
-    static const int offset2 = 0x60;
-    static const int offset3 = 0x30;
+    static const int offset1 = 0x8;
+    static const int offset2 = 0x4E8;
+    static const int offset3 = 0x60;
+    static const int offset4 = 0x30;
+
     static const int citOffset0 = -0x3D0;
     static const int citOffset1 = 0x1918;
+
     bool isValid();
-    QJsonObject fromMemoryValues();
-    QJsonObject objWriteToMemory;
+    QVariantMap fromMemoryValues();
+    QVariantMap objWriteToMemory;
     void writeToMemory();
+    QString getCityName();
+
+
+    QString version;
 signals:
-    void setValues(QJsonObject jsonObject);
+    void toBridge(QVariantMap jsonObject);
 public slots:
     void init();
-    void getValues(QJsonDocument jsonObject);
+    void fromBridge(QVariantMap map);
 };
 
 #endif // CHAIN_H

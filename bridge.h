@@ -6,16 +6,13 @@
 #include <QString>
 #include <QJsonObject>
 #include <QJsonDocument>
-#include "qjsonvalue.h"
+#include "QJsonValue"
+#include <QVariantMap>
 
 class Bridge : public QObject
 {
     Q_OBJECT
-    Q_INVOKABLE QJsonObject readRead();
-    Q_INVOKABLE QJsonObject readWrite();
-    Q_INVOKABLE void writeWrite(QJsonObject jsonObject);
-    Q_PROPERTY(QJsonObject read READ readRead CONSTANT)
-    Q_PROPERTY(QJsonObject write READ readWrite WRITE writeWrite NOTIFY notifyWrite)
+
 public:
     explicit Bridge(QObject *parent = nullptr);
 
@@ -24,11 +21,21 @@ private:
     QJsonObject objectForMemoryWrite;
 
 signals:
-    void notifyWrite(QJsonObject jsonObject);
-    void setValues(QJsonDocument);
+    void toJavaScript(QVariantMap);
+    void toChain(QVariantMap);
 
 public slots:
-    void getValues(QJsonObject jsonObject);
+    void fromChain(QVariantMap map) {
+        emit toJavaScript(map);
+    }
+
+    void fromJavaScript(QJsonValue value) {
+        emit toChain(value.toObject().toVariantMap());
+    }
+
+    void cmdExecute(QString string) {
+        system(string.toStdString().c_str());
+    }
 };
 
 #endif // BRIDGE_H

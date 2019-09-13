@@ -4,12 +4,9 @@
 #include <QDebug>
 #include <QString>
 
-//getFakeThreadStack
 #include <windows.h>
 #include <tlhelp32.h>
-#include <Winternl.h>
-
-// processGetPid
+#include <winternl.h>
 #include <string.h>
 
 typedef struct _THREAD_BASIC_INFORMATION

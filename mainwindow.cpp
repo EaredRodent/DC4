@@ -29,11 +29,6 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     webView->show();
 
-    DWORD processId;
-    HANDLE processHandle;
-
-    DWORD errCode = 0;
-
     //*********************
     // !!! WIN 10 ONLY !!!
     //*********************
@@ -61,35 +56,13 @@ MainWindow::MainWindow(QWidget *parent) :
 //            CloseHandle(hToken);
     //*********************
 
-
-    // PID
-    processId = processGetPid("dro_client.exe");
-
-    //    errCode = GetLastError();
-    //    if(errCode) {
-    //        QMessageBox::critical(0, "Error", FM(errCode));
-    //        exit(0);
-    //    }
-
-    // OPEN PROC
-    processHandle = OpenProcess(PROCESS_ALL_ACCESS, 0, processId);
-
-    //    errCode = GetLastError();
-    //    if(errCode) {
-    //        QMessageBox::critical(0, "OpenProcess", FM(errCode));
-    //        exit(0);
-    //    }
-
-    int fakeThreadStack = getFakeThreadStack(processHandle, processId);
-    qDebug() << "FTS: " << fakeThreadStack;
-
     QThread *chainThread = new QThread();
-    Chain *chain = new Chain(processHandle, fakeThreadStack);
+    Chain *chain = new Chain(version);
     QObject::connect(chainThread, SIGNAL(started()), chain, SLOT(init()));
     chain->moveToThread(chainThread);
-    QObject::connect(bridge, SIGNAL(setValues(QJsonDocument)), chain, SLOT(getValues(QJsonDocument)));
+    QObject::connect(bridge, SIGNAL(toChain(QVariantMap)), chain, SLOT(fromBridge(QVariantMap)));
     chainThread->start();
-    QObject::connect(chain, SIGNAL(setValues(QJsonObject)), bridge, SLOT(getValues(QJsonObject)));
+    QObject::connect(chain, SIGNAL(toBridge(QVariantMap)), bridge, SLOT(fromChain(QVariantMap)));
 }
 
 MainWindow::~MainWindow()

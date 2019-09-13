@@ -18,7 +18,7 @@ DWORD processGetPid(const QString &aProcessName)
         }
     }
 
-    qDebug() << "ProcessGetPid called! Return: 0";
+//    qDebug() << "ProcessGetPid called! Return: 0";
     CloseHandle(pHandle);
     return 0;
 }
