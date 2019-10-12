@@ -57,7 +57,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //*********************
 
     QThread *chainThread = new QThread();
-    Chain *chain = new Chain(version);
+    Chain *chain = new Chain(coreVersion);
     QObject::connect(chainThread, SIGNAL(started()), chain, SLOT(init()));
     chain->moveToThread(chainThread);
     QObject::connect(bridge, SIGNAL(toChain(QVariantMap)), chain, SLOT(fromBridge(QVariantMap)));

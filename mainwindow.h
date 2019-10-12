@@ -38,10 +38,10 @@ private:
     QString clientUrl = "http://dso-client/private/dso-cam";
 #endif
 #ifndef QT_DEBUG
-//    QString clientUrl = "https://dso.earedrodent.com/private/dso-cam";
-    QString clientUrl = "http://dso-client/private/dso-cam";
+    QString clientUrl = "https://dso.earedrodent.com/private/dso-cam";
+//    QString clientUrl = "http://dso-client/private/dso-cam";
 #endif
-    QString version = "4.0.0";
+    QString coreVersion = "4.1.2";
 public slots:
     void setWindowTitleByEngine(QString title);
 };
